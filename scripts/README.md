@@ -17,6 +17,8 @@
 
 ## 개발 검증용 (필요할 때만)
 
+`verify-new-keys.ts` — Supabase 새 API 키(publishable/secret) 호환 검증. `.env.keytest` 에 새 키를 넣고 `npx tsx scripts/verify-new-keys.ts` (운영 데이터는 바꾸지 않음).
+
 `verify-*.ts`, `chat-smoke.ts`, `check-cert-names.ts` — `package.json` 의 `verify:*`, `smoke:chat`, `cert-names:check` 로 실행. 실제 Claude·DB를 호출하는 점검용입니다.
 
 ## 일회성 (개발 중 데이터 적재·분석 — 다시 쓸 일 거의 없음)
