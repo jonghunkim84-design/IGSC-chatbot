@@ -18,6 +18,7 @@ BROWSERS = [
 DOCS = [  # (docs/ 기준 md 경로, PDF 이름, 제목) — PDF 는 md 와 같은 폴더에 만든다
     ("education/교육 매뉴얼.md", "IGSC 챗봇 사용자 교육 매뉴얼.pdf", "IGSC 인증 문의 챗봇 · 사용자 교육 매뉴얼"),
     ("education/고객 확인 사항.md", "IGSC 챗봇 고객 확인 사항.pdf", "IGSC 인증 문의 챗봇 · 고객 확인·결정 사항"),
+    ("handover/인계 당일 작업표_final.md", "IGSC 챗봇 인계 당일 작업표_final.pdf", "IGSC 챗봇 인계 당일 작업표"),
     ("handover/시스템 설계서_final.md", "IGSC 챗봇 시스템 설계서_final.pdf", "IGSC 인증 문의 챗봇 · 시스템 설계서 (final)"),
     ("handover/운영자 매뉴얼_final.md", "IGSC 챗봇 운영자 매뉴얼_final.pdf", "IGSC 인증 문의 챗봇 · 운영자 매뉴얼 (final)"),
     ("handover/인수 가이드 (고객용)_final.md", "IGSC 챗봇 인수 매뉴얼 (고객용)_final.pdf", "IGSC 인증 문의 챗봇 · 시스템 인수 가이드 (고객용, final)"),
@@ -65,7 +66,17 @@ def render(md_name, pdf_name, title):
     body = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists"])
     # '결정 내용' 열이 있는 표는 손으로 적을 수 있게 마지막 열 너비를 확보
     body = re.sub(r"<table>(?=\s*<thead>(?:(?!</thead>).)*결정 내용)", "<table class='decide'>", body, flags=re.S)
-    html = f"<!doctype html><html lang='ko'><head><meta charset='utf-8'><title>{title}</title><style>{CSS}</style></head><body>{body}</body></html>"
+    css = CSS
+    if "작업표" in md_name:  # 한 장짜리 현장 작업표: 가로 용지·작은 글자
+        css = CSS.replace("@page { size: A4; margin: 18mm 15mm 18mm 15mm; }", "@page { size: A4 landscape; margin: 7mm 8mm; }") + """
+body{font-size:8.6pt;line-height:1.3}
+h1{font-size:15pt;margin:0 0 4px;padding-bottom:3px;border-bottom-width:2px}
+p{margin:3px 0}
+table{font-size:7.9pt;margin:4px 0 5px}
+th,td{padding:2px 4px}
+td:first-child,th:first-child{text-align:center}
+"""
+    html = f"<!doctype html><html lang='ko'><head><meta charset='utf-8'><title>{title}</title><style>{css}</style></head><body>{body}</body></html>"
     with tempfile.TemporaryDirectory() as tmp:
         src = pathlib.Path(tmp) / "doc.html"
         src.write_text(html, encoding="utf-8")
