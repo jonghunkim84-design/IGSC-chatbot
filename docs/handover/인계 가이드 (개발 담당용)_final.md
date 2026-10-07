@@ -172,8 +172,8 @@ npx tsx scripts/export-backup.ts
 | 이름 | 값 | 비고 |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | 이전된 프로젝트 주소 | 이전 후에도 동일 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon 키 | |
-| `SUPABASE_SERVICE_ROLE_KEY` | service role 키 | 민감 변수로 저장 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **고객이 직접 만든** publishable 키 (`sb_publishable_…`) | 브라우저에 노출되는 공개 키 |
+| `SUPABASE_SERVICE_ROLE_KEY` | **고객이 직접 만든** secret 키 (`sb_secret_…`) | 민감 변수로 저장. **개발 담당자가 만든 키(`.env.keytest`)는 쓰지 않음** |
 | `ANTHROPIC_API_KEY` | **고객 Console에서 만든 새 키** | 민감 변수 |
 | `ADMIN_ALLOWED_EMAILS` | 관리자 3명 이메일(쉼표) | 개발 담당 이메일 제거 |
 | `NEXT_PUBLIC_SITE_URL` | 정식 도메인 주소 | 로그인 링크 돌아올 주소 |
@@ -218,18 +218,20 @@ npm run golden -- --safety
 - [ ] 보안 헤더: `/chat`은 iframe 허용, `/admin`은 차단 (smoke 항목에 포함)
 - [ ] 점검으로 생긴 대화 기록·미답변 정리: `npx tsx scripts/delete-chat-log.ts --all` (미리보기 확인 후 `--apply`)
 
-### B-8. 키 재발급 (점검 통과 후)
-순서가 중요합니다. **새 키 발급 → 서버 환경 변수 교체 → 재배포 → 동작 확인 → 옛 키 폐기.**
+### B-8. 키 정리 (점검 통과 후)
+**Supabase 키는 고객이 처음부터 자기 키를 만들어 씁니다.** B-3으로 프로젝트가 고객 조직으로 이전된 뒤, 고객이 **Settings > API Keys**에서 새 secret·publishable 키를 직접 만들어 B-4의 환경 변수에 입력합니다. (개발 중 `.env.keytest`에 만든 키는 인계하지 않습니다 — 그 키는 개발 담당자가 알고 있는 키이기 때문입니다.) 이렇게 하면 개발 담당자가 아는 키는 **이전 전 키(기존 anon/service_role 및 개발용 새 키)** 뿐이고, 인계 마지막에 이것만 폐기하면 됩니다.
+
+폐기 순서: **고객 키로 새 서버가 정상 동작 확인 → 개발 담당자가 만든 키(`.env.keytest`의 secret 키 포함)와 기존 anon/service_role 키를 비활성화·삭제 → 동작 재확인.** (비활성화는 되돌릴 수 있고, secret 키 삭제는 영구적입니다.)
 
 | 키 | 방법 | 서버 반영 |
 |---|---|---|
-| Supabase API 키 | **Settings > API Keys**에서 새 secret 키·publishable 키 생성 → 서버 환경 변수 교체 → 재배포 → 동작 확인 후 **옛 키 삭제**(secret 키 삭제는 영구적, 기존 anon/service_role 키는 비활성화로 되돌릴 수 있음). 공식 문서는 "모든 곳이 새 키로 바뀐 것을 확인한 뒤 옛 키를 삭제"하도록 안내 | 환경 변수 2~3개 교체 → 재배포 |
+| Supabase API 키 | 위 설명대로 고객 키로 운영 중 → 개발 담당자가 만든 키와 기존 키를 **비활성화·삭제**(secret 키 삭제는 영구적, 기존 anon/service_role 키는 비활성화로 되돌릴 수 있음). 공식 문서는 "모든 곳이 새 키로 바뀐 것을 확인한 뒤 옛 키를 삭제"하도록 안내 | 환경 변수 2~3개 교체 → 재배포 |
 | Anthropic | 개발 계정 키 폐기 (고객 키는 이미 사용 중) | 이미 고객 키로 교체됨 |
 | Resend | 개발 계정 키 폐기 (고객 키는 이미 사용 중) | 이미 고객 키로 교체됨 |
 | `CRON_SECRET` | 고객 배포에서 새로 만든 값 사용 중 | 해당 없음 |
 | Vercel 토큰 | 개발 PC의 `vercel logout` | — |
 
-Supabase 키를 재발급하면 **개발 계정의 옛 Vercel 프로젝트**는 동작하지 않게 됩니다. 이것이 의도입니다. 새 서버가 정상인 것을 확인한 뒤에만 합니다.
+개발 키를 폐기하면 **개발 계정의 옛 Vercel 프로젝트**는 동작하지 않게 됩니다. 이것이 의도입니다. 고객 키로 새 서버가 정상인 것을 확인한 뒤에만 합니다. 개발 PC의 `.env.keytest`와 `.env.local`은 이때 **삭제**합니다.
 
 ### B-9. 위젯 삽입 코드·채널 링크 전달
 `docs/widget-install.md`의 `{챗봇 도메인}`을 정식 주소로 바꿔 홈페이지 담당 업체에 전달합니다. 그리고 고객에게 **관리자 → 유입 채널**에서 채널별 링크를 복사해 거는 방법(인수 가이드 9장)을 안내합니다. **정식 도메인이 확정되기 전에 채널 링크를 걸지 않도록** 합니다(주소가 바뀌면 이미 건 링크를 모두 교체해야 함). (삽입 일정은 고객이 FAQ 승인을 어느 정도 한 뒤로 잡는 것을 권장 — 승인 0건이면 챗봇이 답을 못 합니다.)
