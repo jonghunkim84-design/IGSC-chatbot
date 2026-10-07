@@ -1,0 +1,8 @@
+# Vercel CLI 배포 시 업로드하지 않을 것 (git 연동 배포에는 영향 없음)
+# 앞의 / 는 프로젝트 루트만 뜻한다 (lib/docs 같은 하위 폴더까지 제외되지 않게)
+.env*
+/data/
+/tests/
+/scripts/
+/docs/
+/supabase/

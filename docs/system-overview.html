@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IGSC 인증 문의 챗봇 · 시스템 소개 (개발자용)</title>
+<style>
+:root{
+  --bg:#f8fafc; --panel:#ffffff; --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e2e8f0;
+  --brand:#0f766e; --brand-d:#115e59; --brand-l:#ccfbf1; --brand-xl:#f0fdfa;
+  --warn:#b45309; --warn-l:#fef3c7; --bad:#b91c1c; --bad-l:#fee2e2; --ok:#047857; --ok-l:#d1fae5; --info:#1d4ed8; --info-l:#dbeafe;
+  --code-bg:#0f172a; --code-ink:#e2e8f0; --inline-bg:#eef2f7;
+  --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1220; --panel:#111a2c; --ink:#e6edf7; --ink2:#c3cfe2; --muted:#8fa0ba; --line:#233049;
+    --brand:#2dd4bf; --brand-d:#5eead4; --brand-l:#134e4a; --brand-xl:#0f2a2c;
+    --warn:#fbbf24; --warn-l:#3a2a08; --bad:#f87171; --bad-l:#3b1414; --ok:#34d399; --ok-l:#0d3326; --info:#60a5fa; --info-l:#14284a;
+    --code-bg:#070d19; --code-ink:#dbe5f5; --inline-bg:#1a2438; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1220; --panel:#111a2c; --ink:#e6edf7; --ink2:#c3cfe2; --muted:#8fa0ba; --line:#233049;
+  --brand:#2dd4bf; --brand-d:#5eead4; --brand-l:#134e4a; --brand-xl:#0f2a2c;
+  --warn:#fbbf24; --warn-l:#3a2a08; --bad:#f87171; --bad-l:#3b1414; --ok:#34d399; --ok-l:#0d3326; --info:#60a5fa; --info-l:#14284a;
+  --code-bg:#070d19; --code-ink:#dbe5f5; --inline-bg:#1a2438; --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 "Pretendard","Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,-apple-system,"Segoe UI",sans-serif}
+body{word-break:keep-all;overflow-wrap:break-word}
+code{overflow-wrap:anywhere;word-break:normal}
+a{color:var(--brand)}
+code,pre{font-family:ui-monospace,"Cascadia Code",Consolas,"D2Coding",monospace}
+code{background:var(--inline-bg);padding:.1em .38em;border-radius:5px;font-size:.88em}
+pre{background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55;position:relative;margin:12px 0}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+.copy{position:absolute;top:8px;right:8px;background:#1e293b;color:#cbd5e1;border:1px solid #334155;border-radius:6px;font-size:11px;padding:3px 8px;cursor:pointer}
+.copy:hover{background:#334155}
+h1,h2,h3,h4{line-height:1.3;margin:0}
+h2{font-size:24px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+h2 .no{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;font-size:15px;font-weight:700}
+h3{font-size:17px;margin:26px 0 8px;color:var(--ink)}
+h4{font-size:14px;margin:16px 0 6px;color:var(--ink2)}
+p{margin:8px 0}
+ul,ol{margin:8px 0;padding-left:22px}
+li{margin:4px 0}
+.lead{color:var(--ink2);font-size:16px}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:0;max-width:1320px;margin:0 auto}
+nav.toc{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:22px 14px 22px 22px;border-right:1px solid var(--line)}
+nav.toc .brand{font-weight:800;font-size:15px;margin-bottom:2px}
+nav.toc .sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+nav.toc a{display:block;padding:6px 10px;margin:1px 0;border-radius:8px;text-decoration:none;color:var(--ink2);font-size:13.5px}
+nav.toc a:hover{background:var(--brand-xl)}
+nav.toc a.active{background:var(--brand-l);color:var(--brand-d);font-weight:700}
+.theme{margin-top:14px;font-size:12px;background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 10px;cursor:pointer}
+main{padding:0 36px 80px;min-width:0}
+.hero{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+.hero .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--brand-d);background:var(--brand-l);padding:4px 10px;border-radius:999px}
+.hero h1{font-size:34px;margin:12px 0 10px;letter-spacing:-.01em}
+.hero p{max-width:820px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0 4px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:26px;color:var(--brand-d);line-height:1.1}
+.stat span{font-size:12.5px;color:var(--muted)}
+section{padding:34px 0 6px;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin:12px 0}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:12px 0}
+.card h4{margin:0 0 6px;color:var(--brand-d)}
+.card p,.card ul{font-size:14px;margin:4px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th{background:var(--brand-xl);color:var(--brand-d);text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto}
+.callout{border-left:4px solid var(--brand);background:var(--brand-xl);padding:11px 15px;border-radius:0 10px 10px 0;margin:14px 0;font-size:14px}
+.callout.warn{border-color:var(--warn);background:var(--warn-l)}
+.callout.bad{border-color:var(--bad);background:var(--bad-l)}
+.callout.info{border-color:var(--info);background:var(--info-l)}
+.callout b:first-child{margin-right:4px}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:700;margin:1px 2px;background:var(--brand-l);color:var(--brand-d);white-space:nowrap}
+.pill.warn{background:var(--warn-l);color:var(--warn)} .pill.bad{background:var(--bad-l);color:var(--bad)} .pill.ok{background:var(--ok-l);color:var(--ok)} .pill.info{background:var(--info-l);color:var(--info)} .pill.gray{background:var(--inline-bg);color:var(--ink2)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:10px 0;padding:0}
+summary{cursor:pointer;padding:11px 16px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--brand);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details .body{padding:0 16px 14px}
+.flow{display:flex;flex-direction:column;gap:0;margin:16px 0}
+.step{display:grid;grid-template-columns:44px 1fr;gap:12px;position:relative;padding-bottom:16px}
+.step::before{content:"";position:absolute;left:21px;top:40px;bottom:-2px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.step .n{width:44px;height:44px;border-radius:12px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;z-index:1}
+.step .n.alt{background:var(--info)} .step .n.stop{background:var(--warn)}
+.step .t{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.step .t b.h{display:block;font-size:15px;margin-bottom:2px}
+.step .t p{font-size:13.5px;margin:3px 0}
+.branches{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:8px}
+.branches div{border:1px dashed var(--line);border-radius:10px;padding:7px 10px;font-size:13px;background:var(--bg)}
+.branches div b{display:block;color:var(--brand-d)}
+.tree{font-family:ui-monospace,Consolas,monospace;font-size:13px;white-space:pre;line-height:1.55}
+svg text{font-family:inherit}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;box-shadow:var(--shadow);overflow-x:auto}
+.diagram svg{display:block;min-width:760px;width:100%;height:auto}
+.foot{color:var(--muted);font-size:12.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:16px}
+.kbd{display:inline-block;background:var(--inline-bg);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 6px;font-size:12px}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  nav.toc{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:4px;padding:14px 16px}
+  nav.toc .brand,nav.toc .sub,.theme{width:100%}
+  nav.toc a{padding:4px 9px;background:var(--panel);border:1px solid var(--line)}
+  main{padding:0 18px 60px}
+  .hero h1{font-size:27px}
+}
+@media print{nav.toc,.copy,.theme{display:none}.layout{display:block}details{break-inside:avoid}details>*{display:block}}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="toc" id="toc" aria-label="목차">
+  <div class="brand">IGSC 문의 챗봇</div>
+  <div class="sub">시스템 소개 · 개발자용</div>
+  <a href="#overview">1. 개요</a>
+  <a href="#principles">2. 설계 원칙</a>
+  <a href="#stack">3. 기술 스택</a>
+  <a href="#architecture">4. 아키텍처</a>
+  <a href="#pipeline">5. 채팅 파이프라인</a>
+  <a href="#retrieval">6. FAQ 검색 방식</a>
+  <a href="#data">7. 데이터 모델·보안</a>
+  <a href="#docs-pipeline">8. 문서 → FAQ 초안</a>
+  <a href="#admin">9. 관리자 앱</a>
+  <a href="#ops">10. 운영 기능</a>
+  <a href="#quality">11. 품질 보증</a>
+  <a href="#code">12. 코드 구조·컨벤션</a>
+  <a href="#deploy">13. 배포·환경</a>
+  <a href="#decisions">14. 설계 결정·한계</a>
+  <a href="#start">15. 로컬 실행</a>
+  <button class="theme" id="themeBtn" type="button">화면 테마 전환</button>
+</nav>
+
+<main>
+
+<header class="hero" id="overview">
+  <span class="tag">SYSTEM OVERVIEW · 2026-10-07 기준</span>
+  <h1>IGSC 인증 문의 챗봇</h1>
+  <p class="lead">국제지속가능인증원(ISO/IEC 17065 인정 인증기관)의 고객 문의 응대 챗봇입니다. 고객이 인증의 가능 여부·비용·기간·절차·서류를 물으면 <b>사람이 승인한 FAQ의 내용만</b> 근거로 답하고, 근거가 없거나 답하면 안 되는 질문(컨설팅·불만)은 <b>답하지 않고 담당자에게 연결</b>합니다.</p>
+  <p>이 문서는 이 시스템을 처음 보는 개발자가 <b>무엇을, 왜, 어떻게 만들었는지</b>를 빠르게 파악하도록 쓴 소개 자료입니다. 구조 → 핵심 파이프라인 → 데이터·보안 → 운영·품질 순으로 읽으면 됩니다.</p>
+
+  <div class="stats">
+    <div class="stat"><b>140</b><span>TS/TSX 소스 파일 (app·lib·components)</span></div>
+    <div class="stat"><b>≈12.5k</b><span>소스 코드 줄 수 (테스트 별도 ≈2.8k)</span></div>
+    <div class="stat"><b>280</b><span>자동 테스트 (Vitest 18개 파일)</span></div>
+    <div class="stat"><b>12</b><span>DB 마이그레이션 (0001~0012)</span></div>
+    <div class="stat"><b>9</b><span>테이블 (+ 저장소 1개)</span></div>
+    <div class="stat"><b>29</b><span>운영·검증 스크립트</span></div>
+  </div>
+
+  <h3>한 문장 구조</h3>
+  <p><b>Next.js(App Router) 한 앱</b>이 챗봇 화면·관리자 화면·API를 모두 제공하고, <b>Supabase</b>(Postgres·Storage·Auth)에 데이터를 두며, <b>Claude</b>(Haiku 4.5 분류·선택, Sonnet 5.5 답변·초안)를 호출합니다. 호스팅은 <b>Vercel</b>입니다.</p>
+
+  <div class="grid3">
+    <div class="card"><h4>고객 쪽</h4><p>홈페이지 위젯(Shadow DOM + iframe), 채널 링크(블로그·링크드인·인스타그램·이메일 서명)로 열리는 <code>/chat</code>. SSE 스트리밍 답변.</p></div>
+    <div class="card"><h4>운영자 쪽</h4><p>FAQ 등록·승인, 미답변 처리, 문서 업로드 → FAQ 초안 자동 생성·검수, 대화 로그, 유입 채널 통계, 운영 상태.</p></div>
+    <div class="card"><h4>운영 보호</h4><p>요청 제한, 보안 헤더, DB·AI 상태 점검과 알림 메일, 전체 백업 스크립트, 대표 질문 회귀 테스트.</p></div>
+  </div>
+</header>
+
+<!-- ───────── 2 ───────── -->
+<section id="principles">
+  <h2><span class="no">2</span>설계 원칙과 구현 방법</h2>
+  <p class="lead">인증기관의 답변은 틀리면 안 되고, 공평성(ISO 17065)을 해치면 안 됩니다. 그래서 "모델을 믿는" 대신 <b>구조로 강제</b>했습니다.</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>원칙</th><th>왜</th><th>구현</th></tr></thead>
+    <tbody>
+      <tr><td><b>승인된 FAQ로만 답한다</b></td><td>환각 방지, 사람이 책임지는 내용만 노출</td><td>검색 대상은 <code>status='approved'</code> FAQ만. 답변 프롬프트는 <code>&lt;faq&gt;</code> 안의 내용만 쓰도록 제한하고 근거가 없으면 <code>[[NO_ANSWER]]</code> 센티널을 출력 → 시스템이 담당자 이관 처리. 일부만 답할 수 있으면 <code>[[PARTIAL]]</code> 센티널 → 고정 연결 문구 부착</td></tr>
+      <tr><td><b>컨설팅은 거절한다</b></td><td>인증기관은 심사 대상에게 컨설팅을 줄 수 없음(공평성)</td><td>분류 단계에서 <code>consulting</code>이면 그 자리에서 <b>고정 문구</b>만 반환(모델이 답을 쓰지 않음). 복합 질문은 <code>complaint &gt; consulting &gt; allowed</code> 우선순위</td></tr>
+      <tr><td><b>비용·기간은 확정값만</b></td><td>추정 금지</td><td>값이 없는 FAQ는 <code>needs_input</code>(답변 비어 있음)으로 두고 승인 불가·답변 미사용. 비용·기간 FAQ에는 면책 문구 자동 첨부. 회귀 테스트가 "답변의 숫자는 근거 FAQ에 있는 값만" 기계 검사</td></tr>
+      <tr><td><b>승인은 사람만</b></td><td>자동 생성 초안이 곧바로 고객에게 나가면 안 됨</td><td>문서에서 만든 초안은 항상 <code>draft</code>. 승인 시 <code>approved_by/approved_at</code> 기록. 일괄 승인도 건별 기록</td></tr>
+      <tr><td><b>제품 인증 가능 여부는 확답하지 않는다</b></td><td>심사 전 판단 불가</td><td>가능 여부 질문(<code>eligibility</code>)이면 유사 인증 이력(공개 동의분)만 참고로 안내 + "담당자 검토 후 확정" 문구</td></tr>
+      <tr><td><b>모든 대화를 기록한다</b></td><td>FAQ 개선 순환, 감사</td><td><code>chat_log</code> 전 건 기록. 답하지 못한 질문은 <code>unanswered</code> → 관리자가 FAQ로 승격하는 "선순환"</td></tr>
+      <tr><td><b>오류는 삼키지 않는다</b></td><td>조용한 실패 방지</td><td>예외는 로깅 후 고객에게는 담당자 연결 안내. 운영 상태 점검이 AI 장애(크레딧 소진 등)를 별도로 감지</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout info"><b>핵심 아이디어</b> 처리 순서(분류 → 분기 → 선택 → 답변 → 기록)를 단계 건너뛰기 없이 항상 거치고, <b>모델이 문장을 만드는 경로는 "allowed + 승인 FAQ 근거 있음" 단 하나</b>입니다. 나머지는 전부 고정 문구입니다.</div>
+</section>
+
+<!-- ───────── 3 ───────── -->
+<section id="stack">
+  <h2><span class="no">3</span>기술 스택</h2>
+  <div class="tw"><table>
+    <thead><tr><th>영역</th><th>기술</th><th>용도·메모</th></tr></thead>
+    <tbody>
+      <tr><td>프레임워크</td><td>Next.js <b>15.5</b> (App Router, Turbopack) · React <b>19.1</b></td><td>페이지·API 라우트·서버 액션·미들웨어를 한 앱에. SSE 스트리밍 응답</td></tr>
+      <tr><td>언어·스타일</td><td>TypeScript 5 · Tailwind CSS 4</td><td>strict 타입. 관리자 UI는 Tailwind 유틸리티 클래스</td></tr>
+      <tr><td>DB·인증·저장소</td><td>Supabase (Postgres + RLS, Storage, Auth) · <code>@supabase/supabase-js</code> · <code>@supabase/ssr</code></td><td>서버는 service role 키, 관리자 로그인은 이메일 매직링크(Auth) + 허용 이메일 목록</td></tr>
+      <tr><td>AI</td><td>Anthropic API (<code>@anthropic-ai/sdk</code>)</td><td>분류·FAQ 선택: <b>Claude Haiku 4.5</b> / 답변·FAQ 초안 생성: <b>Claude Sonnet 5.5</b>. 모델은 환경 변수로 교체 가능</td></tr>
+      <tr><td>문서 추출</td><td><code>unpdf</code>(PDF) · <code>mammoth</code>(DOCX) · <code>read-excel-file</code>(XLSX) · <code>fflate</code>(PPTX 압축 해제) · <code>node-html-parser</code>(크롤링)</td><td>PDF·DOCX·XLSX·PPTX·CSV·TXT·MD 지원. HWP는 PDF 변환 후 업로드</td></tr>
+      <tr><td>호스팅·스케줄</td><td>Vercel (Functions 최대 60초, Cron)</td><td><code>vercel.json</code> 크론으로 일일 상태 점검</td></tr>
+      <tr><td>메일</td><td>Resend (HTTP API)</td><td>장애 알림 메일. 의존성 없이 <code>fetch</code>로 호출. Slack 호환 웹훅도 지원</td></tr>
+      <tr><td>테스트·도구</td><td>Vitest 3 · ESLint 9 · tsx · dotenv</td><td>단위·시나리오 테스트, 대표 질문 회귀 점검 스크립트</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lead">의도적으로 <b>벡터 DB·임베딩·ORM·상태 관리 라이브러리를 쓰지 않았습니다.</b> FAQ가 수백 건 규모라 프롬프트 선택 방식으로 충분하고(6장), DB 접근은 얇은 리포지토리 함수(<code>lib/db/</code>)로 충분했습니다.</p>
+</section>
+
+<!-- ───────── 4 ───────── -->
+<section id="architecture">
+  <h2><span class="no">4</span>아키텍처</h2>
+  <div class="diagram">
+  <svg viewBox="0 0 960 470" role="img" aria-label="시스템 구성도">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--muted)"/></marker>
+    </defs>
+    <g fill="none" stroke="var(--line)" stroke-width="1.5">
+      <rect x="10" y="20" width="210" height="430" rx="14" fill="var(--bg)"/>
+      <rect x="250" y="20" width="450" height="430" rx="14" fill="var(--brand-xl)" stroke="var(--brand)"/>
+      <rect x="730" y="20" width="220" height="430" rx="14" fill="var(--bg)"/>
+    </g>
+    <text x="115" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--muted)">CLIENTS</text>
+    <text x="475" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--brand-d)">VERCEL · Next.js 15 (App Router)</text>
+    <text x="840" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="var(--muted)">MANAGED SERVICES</text>
+
+    <g font-size="12.5" fill="var(--ink)">
+      <rect x="26" y="66" width="178" height="74" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="115" y="90" text-anchor="middle" font-weight="700">홈페이지 위젯</text>
+      <text x="115" y="108" text-anchor="middle" fill="var(--muted)">public/widget.js</text>
+      <text x="115" y="124" text-anchor="middle" fill="var(--muted)">Shadow DOM + iframe</text>
+
+      <rect x="26" y="156" width="178" height="74" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="115" y="180" text-anchor="middle" font-weight="700">/chat 화면</text>
+      <text x="115" y="198" text-anchor="middle" fill="var(--muted)">React 클라이언트 · SSE</text>
+      <text x="115" y="214" text-anchor="middle" fill="var(--muted)">채널 링크(?src=) 유입</text>
+
+      <rect x="26" y="246" width="178" height="74" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="115" y="270" text-anchor="middle" font-weight="700">관리자 브라우저</text>
+      <text x="115" y="288" text-anchor="middle" fill="var(--muted)">/admin · 매직링크 로그인</text>
+      <text x="115" y="304" text-anchor="middle" fill="var(--muted)">서버 컴포넌트·서버 액션</text>
+
+      <rect x="26" y="336" width="178" height="96" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="115" y="360" text-anchor="middle" font-weight="700">외부 감시·스케줄</text>
+      <text x="115" y="378" text-anchor="middle" fill="var(--muted)">Vercel Cron (일 1회)</text>
+      <text x="115" y="394" text-anchor="middle" fill="var(--muted)">가동 감시 → /api/health</text>
+      <text x="115" y="410" text-anchor="middle" fill="var(--muted)">CLI 스크립트(scripts/)</text>
+
+      <rect x="268" y="66" width="414" height="66" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="475" y="90" text-anchor="middle" font-weight="700">middleware.ts</text>
+      <text x="475" y="108" text-anchor="middle" fill="var(--muted)">/admin, /api/admin 보호 (Supabase 세션 + 허용 이메일)</text>
+      <text x="475" y="124" text-anchor="middle" fill="var(--muted)">보안 헤더·CSP frame-ancestors 는 next.config.ts</text>
+
+      <rect x="268" y="146" width="200" height="130" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="368" y="170" text-anchor="middle" font-weight="700">Pages (RSC)</text>
+      <text x="368" y="190" text-anchor="middle" fill="var(--muted)">/chat · /admin/(panel)/*</text>
+      <text x="368" y="208" text-anchor="middle" fill="var(--muted)">FAQ · 미답변 · 문서 · 로그</text>
+      <text x="368" y="226" text-anchor="middle" fill="var(--muted)">유입 채널 · 인증 종류</text>
+      <text x="368" y="244" text-anchor="middle" fill="var(--muted)">운영 상태 · 대시보드</text>
+
+      <rect x="482" y="146" width="200" height="130" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="582" y="170" text-anchor="middle" font-weight="700">API Routes</text>
+      <text x="582" y="190" text-anchor="middle" fill="var(--muted)">POST /api/chat (SSE)</text>
+      <text x="582" y="208" text-anchor="middle" fill="var(--muted)">/api/admin/login, generate-faq</text>
+      <text x="582" y="226" text-anchor="middle" fill="var(--muted)">/api/health · /api/cron/monitor</text>
+      <text x="582" y="244" text-anchor="middle" fill="var(--muted)">(/api/search: 개발용, 운영 404)</text>
+
+      <rect x="268" y="290" width="414" height="142" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="475" y="314" text-anchor="middle" font-weight="700">lib/ — 업무 로직 (서버 전용)</text>
+      <text x="475" y="336" text-anchor="middle" fill="var(--muted)">chat/ 처리 순서 · search/ FAQ 선택 · docs/ 문서→초안</text>
+      <text x="475" y="354" text-anchor="middle" fill="var(--muted)">extract/ 문서 추출 · monitor/ 상태·알림 · prompts/ 프롬프트 상수</text>
+      <text x="475" y="372" text-anchor="middle" fill="var(--muted)">db/ 리포지토리(유일한 DB 접근 경로) · rate-limit.ts · channels.ts</text>
+      <text x="475" y="396" text-anchor="middle" fill="var(--brand-d)" font-weight="700">server-only 가드: 클라이언트에서 import 하면 빌드 실패</text>
+      <text x="475" y="414" text-anchor="middle" fill="var(--muted)">모든 외부 호출은 의존성 주입(ChatDeps) 가능 → 테스트에서 stub</text>
+
+      <rect x="746" y="66" width="188" height="150" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="840" y="90" text-anchor="middle" font-weight="700">Supabase</text>
+      <text x="840" y="110" text-anchor="middle" fill="var(--muted)">Postgres + RLS</text>
+      <text x="840" y="128" text-anchor="middle" fill="var(--muted)">Storage (documents, 비공개)</text>
+      <text x="840" y="146" text-anchor="middle" fill="var(--muted)">Auth (이메일 매직링크)</text>
+      <text x="840" y="164" text-anchor="middle" fill="var(--muted)">RPC rate_limit_hit</text>
+      <text x="840" y="190" text-anchor="middle" fill="var(--muted)">service role 키 (서버 전용)</text>
+
+      <rect x="746" y="232" width="188" height="106" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="840" y="256" text-anchor="middle" font-weight="700">Anthropic API</text>
+      <text x="840" y="276" text-anchor="middle" fill="var(--muted)">Haiku 4.5 — 분류·FAQ 선택</text>
+      <text x="840" y="294" text-anchor="middle" fill="var(--muted)">Sonnet 5.5 — 답변·초안</text>
+      <text x="840" y="312" text-anchor="middle" fill="var(--muted)">프롬프트 캐싱(FAQ 목록)</text>
+
+      <rect x="746" y="354" width="188" height="78" rx="10" fill="var(--panel)" stroke="var(--line)"/>
+      <text x="840" y="378" text-anchor="middle" font-weight="700">Resend</text>
+      <text x="840" y="398" text-anchor="middle" fill="var(--muted)">장애 알림 메일(HTTP)</text>
+      <text x="840" y="414" text-anchor="middle" fill="var(--muted)">+ Slack 호환 웹훅</text>
+    </g>
+
+    <g stroke="var(--muted)" stroke-width="1.6" fill="none" marker-end="url(#ar)">
+      <path d="M204 103 H268"/>
+      <path d="M204 193 H268"/>
+      <path d="M204 283 H268"/>
+      <path d="M204 384 H268"/>
+      <path d="M682 190 H746"/>
+      <path d="M682 255 C 715 255 715 285 746 285"/>
+      <path d="M682 360 C 715 360 715 390 746 390"/>
+    </g>
+  </svg>
+  </div>
+
+  <h3>요청 경로 두 가지</h3>
+  <div class="grid2">
+    <div class="card"><h4>고객 대화</h4><p><code>widget.js</code> / 채널 링크 → <code>/chat</code>(React) → <code>POST /api/chat</code> → 요청 제한 확인 → <code>runChat()</code> → SSE(<code>meta</code> → <code>delta*</code> → <code>done</code>) 스트리밍. 세션은 브라우저 탭 단위 UUID, 채널은 <code>?src=</code> 또는 Referer로 판정.</p></div>
+    <div class="card"><h4>관리자 작업</h4><p>매직링크 로그인 → <code>middleware</code>가 세션·허용 이메일 확인 → 서버 컴포넌트가 <code>lib/db</code>로 직접 조회, 변경은 <b>서버 액션</b>(<code>requireAdmin()</code> 재검증). 긴 작업(문서 초안 생성)은 클라이언트가 <code>/api/admin/documents/[id]/generate-faq</code>를 <b>조각 단위로 반복 호출</b>.</p></div>
+  </div>
+</section>
+
+<!-- ───────── 5 ───────── -->
+<section id="pipeline">
+  <h2><span class="no">5</span>채팅 파이프라인 (<code>lib/chat/run-chat.ts</code>)</h2>
+  <p class="lead">한 질문이 처리되는 전체 순서입니다. <code>runChat()</code>은 <b>AsyncGenerator</b>로 이벤트(<code>meta</code>/<code>delta</code>/<code>done</code>)를 내보내고, 모든 외부 의존성은 <code>ChatDeps</code>로 주입됩니다.</p>
+
+  <div class="flow">
+    <div class="step"><div class="n">1</div><div class="t"><b class="h">요청 검증 · 요청 제한 <span class="pill gray">app/api/chat/route.ts</span></b><p>JSON 파싱, 메시지 500자 제한, 세션·인증 종류·되묻기 이전 질문·채널(<code>source</code>) 정리. IP 해시 기준 분당 15 / 시간당 120 / 전체 일 3,000건 (초과 시 HTTP 429 + 안내). 인증 종류 이름표는 10분 캐시.</p></div></div>
+    <div class="step"><div class="n alt">2</div><div class="t"><b class="h">분류 ∥ FAQ 검색 <span class="pill info">병렬</span> <span class="pill gray">Haiku 4.5</span></b><p>질문을 <code>allowed / consulting / complaint / out_of_scope</code> 로 분류하고 <code>eligibility</code>(가능 여부 질문?)·<code>cert_specified</code>(인증 이름 언급?)를 함께 뽑습니다. <b>분류가 끝나기 전에 FAQ 검색을 먼저 시작</b>해 대기 시간을 줄이고(약 0.7s ∥ 1.7s), 분류 결과가 거절·이관이면 검색 결과는 버립니다(한국어가 아니면 검색 자체를 시작하지 않음).</p></div></div>
+    <div class="step"><div class="n stop">3</div><div class="t"><b class="h">분기 — 고정 문구 경로</b>
+      <div class="branches">
+        <div><b>consulting</b>공평성 안내 + 외부 컨설팅 안내 (모델 미사용)</div>
+        <div><b>complaint</b>접수 방법 + 연락처 (담당자 직접 대응)</div>
+        <div><b>out_of_scope</b>"인증 문의 전용" 안내</div>
+        <div><b>한국어 아님</b>담당자 연결 + 영문 안내</div>
+      </div></div></div>
+    <div class="step"><div class="n stop">4</div><div class="t"><b class="h">승인 FAQ 0건 확인</b><p><code>hasApprovedFaq()</code>가 false면 검색·답변 없이 <b>"AI 답변 준비 중입니다."</b>(기록 안내·연락처 포함)로 종료하고 질문은 미답변 목록에 남깁니다. 확인 실패 시에는 평소대로 진행(장애 때문에 응대가 막히지 않게).</p></div></div>
+    <div class="step"><div class="n">5</div><div class="t"><b class="h">FAQ 선택 (+ 가능 여부면 인증 이력) <span class="pill gray">Haiku 4.5 · lib/search</span></b><p>승인 FAQ <b>질문 목록 전체</b>를 프롬프트에 넣고 관련 번호를 고릅니다(최대 5개, 6장). 인증 종류 되묻기 후속이면 이전 질문과 합쳐 처리. 가능 여부 질문이면 같은 인증의 <b>공개 동의된 이력</b>에서 유사 제품군을 별도로 선택.</p></div></div>
+    <div class="step"><div class="n">6</div><div class="t"><b class="h">답변 생성 (스트리밍) <span class="pill gray">Sonnet 5.5 · max_tokens 1500</span></b><p>선택된 FAQ(질문·답변)만 컨텍스트로 전달. 앞부분을 버퍼링해 <b>센티널</b>을 판정한 뒤 고객에게는 제거해서 내보냅니다. 출처 링크·면책 문구·이력 블록은 <b>시스템이 조립</b>해 붙이므로 모델이 쓰지 않습니다.</p>
+      <div class="branches">
+        <div><b>answered</b>FAQ 근거 답변 + 출처 + 필요 시 면책</div>
+        <div><b>answered (partial)</b><code>[[PARTIAL]]</code> → 가능한 범위까지 + 고정 연결 문장 + 미답변 기록</div>
+        <div><b>handoff</b><code>[[NO_ANSWER]]</code>/근거 없음/<code>needs_input</code> 항목/오류</div>
+        <div><b>clarify</b>인증 종류 모를 때 되묻기 + 선택 버튼</div>
+      </div></div></div>
+    <div class="step"><div class="n alt">7</div><div class="t"><b class="h">기록 <span class="pill gray">chat_log · unanswered</span></b><p>질문·답변·근거 FAQ id·처리 결과(route)·유입 채널(<code>source</code>)을 <code>chat_log</code>에, 답하지 못한 질문은 <code>unanswered</code>에 남깁니다. 기록 실패도 삼키지 않고 로깅하며, 실패해도 고객 응답은 이미 전달된 상태입니다.</p></div></div>
+  </div>
+
+  <h3>의존성 주입 구조 (테스트 용이성의 핵심)</h3>
+<pre><code>export interface ChatDeps {
+  classify:        (q: string) =&gt; Promise&lt;Classification&gt;;
+  search:          (q: string, certType?: string) =&gt; Promise&lt;FaqMatch[]&gt;;
+  listHistory:     (certType?: string) =&gt; Promise&lt;CertHistory[]&gt;;
+  selectHistory:   (q: string, rows: CertHistory[]) =&gt; Promise&lt;CertHistory[]&gt;;
+  streamAnswer:    (q, matches, opts) =&gt; AsyncIterable&lt;string&gt;;
+  listCertOptions: () =&gt; Promise&lt;CertOption[]&gt;;
+  hasApprovedFaq:  () =&gt; Promise&lt;boolean&gt;;
+  logChat:         (row) =&gt; Promise&lt;{ id: string }&gt;;
+  logUnanswered:   (question: string, chatLogId?: string) =&gt; Promise&lt;unknown&gt;;
+}
+// runChat(input, deps: Partial&lt;ChatDeps&gt; = {}) — 기본값은 실제 구현, 테스트는 필요한 것만 stub</code></pre>
+
+  <h3>처리 결과(route) 값</h3>
+  <div class="tw"><table>
+    <thead><tr><th>route</th><th>의미</th><th>unanswered 적재</th></tr></thead>
+    <tbody>
+      <tr><td><code>answered</code></td><td>FAQ 근거 답변 (부분 안내 포함)</td><td>부분 안내일 때만</td></tr>
+      <tr><td><code>handoff</code></td><td>담당자 이관 (근거 없음, 보완 필요 FAQ, 오류, 외국어, 준비 중)</td><td>예</td></tr>
+      <tr><td><code>clarify</code></td><td>인증 종류 되묻기</td><td>아니오</td></tr>
+      <tr><td><code>consulting_blocked</code> · <code>complaint</code> · <code>out_of_scope</code></td><td>고정 문구 응답</td><td>아니오</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>SSE 프로토콜</h3>
+<pre><code>event: meta   data: {"sessionId":"…","route":"answered","sources":["https://…"],"options":[]}
+event: delta  data: {"text":"인증 절차는 …"}      // 여러 번
+event: done   data: {}
+// 한도 초과: HTTP 429 {"error":"rate_limited","message":"…"} + Retry-After</code></pre>
+</section>
+
+<!-- ───────── 6 ───────── -->
+<section id="retrieval">
+  <h2><span class="no">6</span>FAQ 검색 방식 — 임베딩 없는 "프롬프트 선택"</h2>
+  <p class="lead">승인 FAQ가 수백 건 규모라 <b>질문 목록 전체를 프롬프트에 넣고 모델이 관련 번호를 고르는</b> 방식을 택했습니다. 벡터 DB·임베딩 컬럼 없이 단순하고, 의미가 같은 다른 표현(약어·동의어)에도 강합니다.</p>
+
+  <div class="grid2">
+    <div class="card"><h4>검색 흐름 (<code>createSearchFaq</code>)</h4>
+      <ol>
+        <li>승인 FAQ 인덱스(id·질문·다른 표현·인증 종류, <b>답변 제외</b>)를 5분 TTL 캐시 + <b>지문(개수+최신 수정 시각)</b>으로 최신성 확인 → 다른 서버 인스턴스의 수정도 즉시 반영</li>
+        <li><b>어휘 일치 보정</b>(<code>lexical.ts</code>): 질문이 FAQ 질문·다른 표현과 사실상 같으면(8자 이상, 60% 이상 일치) 모델과 무관하게 먼저 포함 (긴 목록 뒤쪽 항목 누락 방지, 최대 3개)</li>
+        <li><b>모델 선택</b>(Haiku, <code>temperature 0</code>, <code>max_tokens 100</code>): 번호 JSON 배열만 출력. FAQ 목록 블록은 <b>프롬프트 캐싱</b>(<code>cache_control: ephemeral</code>) 대상</li>
+        <li><b>공통 FAQ 보충</b>: 특정 인증 FAQ가 뽑혔고 모두 공통은 아니면, <code>common</code> 항목만 모은 목록으로 <b>두 번째 선택을 병렬 실행</b>해 절차·서류 같은 공통 정보를 채움</li>
+        <li>합치기: 어휘 일치 → 모델 선택 → 공통 보충 순, 중복 제거, 최대 6건. 선택된 id의 <b>답변은 그때 한 번에 조회</b></li>
+      </ol>
+    </div>
+    <div class="card"><h4>견고성 장치</h4>
+      <ul>
+        <li><b>잘린 응답 허용 파서</b>: 모델이 번호를 너무 많이 내서 <code>[2, 3, 10 …</code>처럼 닫는 괄호 없이 끊겨도, 읽을 수 있는 앞쪽 번호만 쓰고 <code>SELECT_MAX=5</code>로 자름 (이 오류로 고객 응답이 실패하지 않음)</li>
+        <li>목록에 없는 번호·중복은 버림</li>
+        <li><b>선택 규칙</b>(<code>lib/prompts/select.ts</code>): 같은 정보 종류(비용/절차 등)만, 인증 종류가 다르면 제외, <code>[공통]</code> 항목은 모든 인증에 해당, 복합 질문은 부분마다 하나 이상, 개요 질문은 분야를 골고루</li>
+        <li>선택은 "<b>고르는 것</b>"일 뿐 답은 쓰지 않으므로, 프롬프트 주입이 있어도 고정 문구 경로를 바꾸지 못함</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout warn"><b>교체 지점 · 전환 기준</b> 검색 로직은 <code>searchFaq()</code> 인터페이스 뒤에 격리되어 있어 벡터 검색으로 바꿔도 <b>이 모듈 안에서만</b> 수정하면 됩니다(<code>CLAUDE.md</code> 규칙: 임베딩 코드·컬럼을 임의로 추가하지 않음). 질문당 비용·지연이 FAQ 수에 비례하므로, 승인 FAQ가 <b>약 500건</b>을 넘거나 회귀 테스트가 반복 실패하거나 지연·비용이 예산을 넘으면 전환을 검토합니다. 현재 440~460건 규모에서 대표 질문 42건이 모두 통과했습니다.</div>
+</section>
+
+<!-- ───────── 7 ───────── -->
+<section id="data">
+  <h2><span class="no">7</span>데이터 모델 · 보안</h2>
+
+  <div class="tw"><table>
+    <thead><tr><th>테이블</th><th>역할</th><th>주요 컬럼·메모</th></tr></thead>
+    <tbody>
+      <tr><td><code>faq</code></td><td>질문·답변 한 쌍 (챗봇의 유일한 근거)</td><td><code>question, variants[], answer, cert_type, category(절차/비용/기간/서류/대상·범위/갱신), source_url, status(draft|approved), needs_input, needs_review, review_hold, source_doc_id/page/evidence, source_unanswered_id, draft_note, approved_by/at</code></td></tr>
+      <tr><td><code>cert_types</code></td><td>인증 종류 레지스트리(관리자가 추가)</td><td><code>code(PK), name_ko, name_en, group, sort, is_active</code>. 51건 시드. 메모리의 이름 맵을 제자리 갱신하고 10분 캐시</td></tr>
+      <tr><td><code>cert_history</code></td><td>인증 이력(유사 사례 안내용)</td><td><code>cert_type, product_category, year, company_public</code> — <b>공개 동의분만</b> 챗봇이 사용, 업체명은 노출하지 않음</td></tr>
+      <tr><td><code>chat_log</code></td><td>모든 대화</td><td><code>session_id, question, answer, matched_faq_ids[], route, source, source_detail, created_at</code></td></tr>
+      <tr><td><code>unanswered</code></td><td>답하지 못한 질문 목록</td><td><code>question, chat_log_id, resolved</code> → FAQ 승격의 출발점</td></tr>
+      <tr><td><code>documents</code></td><td>업로드 문서(초안의 재료)</td><td><code>file_name, storage_path, doc_category, version, supersedes, status(pending|extracted|failed|archived), content_hash, doc_format(narrative|qa_pairs), format_confirmed, extracted_chars, page_count</code></td></tr>
+      <tr><td><code>doc_chunks</code></td><td>추출한 본문 조각</td><td><code>document_id, chunk_index, content, page_no, section_title</code></td></tr>
+      <tr><td><code>generation_jobs</code></td><td>문서 단위 FAQ 일괄 초안 작업 상태</td><td>진행 위치·락(<code>lock_until</code>)·상한 도달(<code>limit_reached</code>) — 중단·재개 지원</td></tr>
+      <tr><td><code>rate_limits</code></td><td>요청 제한 카운터</td><td><code>(key, window_start) PK, count</code> + RPC <code>rate_limit_hit</code>(원자적 upsert)</td></tr>
+    </tbody>
+  </table></div>
+  <p>마이그레이션은 <code>supabase/migrations/0001~0012</code>를 순서대로 SQL Editor에서 실행합니다(<code>0009</code>는 인증 종류 시드, <code>0010</code>은 작업 테이블 이름 변경·중복 업로드 해시·승인자 기록, <code>0012</code>는 유입 채널).</p>
+
+  <h3>접근 제어 (이중 방어)</h3>
+  <div class="grid3">
+    <div class="card"><h4>DB — RLS</h4><p>모든 테이블 RLS 활성. 익명(anon)에게는 <b>승인된 FAQ의 지정 컬럼만</b> 읽기 허용(컬럼 단위 GRANT). 나머지는 정책 없음 = 서버(service role)만 접근. 요청 제한 함수는 <code>service_role</code>만 실행 가능.</p></div>
+    <div class="card"><h4>서버 — 계층 분리</h4><p>DB 접근은 <code>lib/db/</code>만, 서버 클라이언트는 <code>server-only</code> import 가드. service role 키는 <code>NEXT_PUBLIC_</code> 접두사 없이 서버에만. 관리자 API는 <code>api-guard</code>, 서버 액션은 <code>requireAdmin()</code>으로 이중 확인.</p></div>
+    <div class="card"><h4>네트워크 — 헤더·제한</h4><p><code>nosniff</code>, <code>Referrer-Policy</code>, <code>Permissions-Policy</code>, HSTS. <code>/chat</code>만 iframe 허용(<code>CHAT_FRAME_ANCESTORS</code>로 제한 가능), <code>/admin</code>은 <code>frame-ancestors 'none'</code>, 그 외 <code>'self'</code>. 로그인·채팅 IP별 제한.</p></div>
+  </div>
+  <div class="callout"><b>관리자 로그인</b> Supabase Auth 매직링크(<code>signInWithOtp</code>). 허용 이메일(<code>ADMIN_ALLOWED_EMAILS</code>)에 없으면 메일을 보내지 않되 <b>응답은 동일</b>(관리자 주소 추측 방지). 미들웨어는 쿠키를 믿지 않고 <code>getUser()</code>로 토큰을 Supabase에 검증하고, 허용되지 않은 계정은 세션 쿠키를 제거합니다.</div>
+</section>
+
+<!-- ───────── 8 ───────── -->
+<section id="docs-pipeline">
+  <h2><span class="no">8</span>문서 → FAQ 초안 파이프라인</h2>
+  <p class="lead">운영자가 인증 안내서·절차서 같은 파일을 올리면 <b>근거 문장이 확인된 FAQ 초안</b>만 만들어 줍니다. 문서는 답변의 근거가 아니라 <b>초안의 재료</b>이고, 고객에게 나가는 것은 사람이 승인한 FAQ뿐입니다.</p>
+
+  <div class="flow">
+    <div class="step"><div class="n">1</div><div class="t"><b class="h">업로드 <span class="pill gray">Storage + documents</span></b><p>최대 20개·파일당 20MB, 형식 검사. 브라우저가 <b>SHA-256</b>을 계산해 서버에 전달 → 서버도 재계산해 <b>내용이 같은 파일은 차단</b>(이름이 달라도). 이름만 같고 내용이 다르면 개정판(<code>version</code>, <code>supersedes</code>)/별도 문서/취소를 선택. 업로드 시 MIME을 확장자로 정규화(브라우저가 이상한 MIME을 보내는 경우 대비).</p></div></div>
+    <div class="step"><div class="n">2</div><div class="t"><b class="h">추출·조각화 <span class="pill gray">lib/extract</span></b><p>형식별 추출기(PDF/DOCX/XLSX/PPTX/텍스트) → 문단 단위 <b>chunk</b>(쪽·섹션 제목 보존). 스캔 PDF는 <b>쪽당 평균 50자 미만이면 추출 실패</b>로 처리(원본 요청). 텍스트와 조각은 <code>finish_doc_extraction</code> RPC로 원자적 교체.</p></div></div>
+    <div class="step"><div class="n alt">3</div><div class="t"><b class="h">초안 생성 <span class="pill gray">Sonnet 5.5</span></b><p>조각 5개씩(질문·답변 자료는 10쌍씩) 배치로 호출, 조각당 최대 3건. 작업 상태를 <code>generation_jobs</code>에 저장해 <b>화면을 닫아도 이어서 진행</b>(락·재개), 문서당 <b>최대 50건</b>. <code>narrative</code>(설명 자료)는 모델이 질문을 만들고, <code>qa_pairs</code>(Q&amp;A 문서)는 질문·답변을 <b>원문 그대로</b> 가져옴.</p></div></div>
+    <div class="step"><div class="n stop">4</div><div class="t"><b class="h">선별(screening) — 자동 탈락 <span class="pill warn">핵심 안전장치</span></b>
+      <div class="branches">
+        <div><b>근거 문장 대조</b>원문에 글자 그대로 있어야 함</div>
+        <div><b>숫자 대조</b>비용·기간 수치가 원문과 같아야 함(<code>strictNumbers</code>)</div>
+        <div><b>컨설팅성 제외</b>"통과 방법" 류 초안 불가</div>
+        <div><b>타 기관 안내 제외</b>IGSC 소관이 아닌 제도</div>
+        <div><b>중복 제외</b>같은 인증의 기존 FAQ와 같은 질문(Haiku로 의미 비교)</div>
+      </div>
+      <p>근거가 없으면 답을 지어내지 않고 <b>빈 답변의 '보완 필요'</b>(<code>needs_input</code>) 초안으로 남깁니다. 탈락 항목은 사유·원문과 함께 보존되어 운영자가 직접 작성으로 이어갈 수 있습니다.</p></div></div>
+    <div class="step"><div class="n">5</div><div class="t"><b class="h">검수 → 승인 <span class="pill gray">사람</span></b><p>문서 단위 <b>검수 큐</b>(카드에서 수정·승인·보류·삭제, 원문 보기에서 근거 문장 하이라이트, 키보드 A/S/D). 승인하면 즉시 챗봇에 반영되고 승인자·시각이 기록됩니다.</p></div></div>
+    <div class="step"><div class="n alt">6</div><div class="t"><b class="h">개정 대응 <span class="pill gray">재검토 표시</span></b><p>문서를 개정(또는 삭제)하면 그 문서로 만든 <b>승인된 FAQ에 "재검토 필요"</b> 표시만 붙고 답변은 계속 서비스됩니다. 새 문서로 초안을 다시 만들어 기존 답변과 나란히 비교한 뒤 채우기/변경 없음으로 처리.</p></div></div>
+  </div>
+
+  <details><summary>추가 사항: 중복 방지·일관성 규칙</summary><div class="body">
+    <ul>
+      <li>FAQ 직접 등록·수정 시 같은 인증 종류의 의미가 같은 질문을 찾아 <b>"비슷한 FAQ가 있습니다"</b> 경고(저장은 막지 않음).</li>
+      <li>같은 질문이라도 <b>인증 종류가 다르면 중복이 아님</b>. 같은 인증 코드 안에서도 질문에 드러난 대분류(식품 비건/화장품 비건)가 다르면 별개로 처리.</li>
+      <li>이미 초안을 만든 문서를 다시 처리하면 이전 <b>자동</b> 초안만 교체하고, 수정해 둔 초안·미답변에서 만든 초안·승인된 FAQ는 보호(초안 메모 접두사로 구분).</li>
+      <li>문서에서 만든 FAQ가 모두 승인되면 "FAQ 초안 만들기" 버튼이 승인 완료 표시로 바뀜(남은 작업이 있으면 다시 노출).</li>
+    </ul>
+  </div></details>
+</section>
+
+<!-- ───────── 9 ───────── -->
+<section id="admin">
+  <h2><span class="no">9</span>관리자 앱 (<code>app/admin/(panel)/</code>)</h2>
+  <div class="tw"><table>
+    <thead><tr><th>화면</th><th>기능</th></tr></thead>
+    <tbody>
+      <tr><td><b>대시보드</b></td><td>오늘·이번 주 문의 수, 답변 성공률(답변 완료 ÷ (답변 완료 + 담당자 이관)), 30일 Top 10 질문, 미처리 미답변, 재검토 필요 건수 (KST 기준)</td></tr>
+      <tr><td><b>FAQ</b></td><td>목록·필터(인증 종류·카테고리·상태·재검토)·키워드 검색, 등록·수정, 유사 FAQ 경고, <b>여러 건 승인·삭제</b>(승인은 보완 필요 항목 자동 건너뜀, 삭제는 초안만), 승인자 열</td></tr>
+      <tr><td><b>미답변 질문</b></td><td>직접 등록(질문 채워진 폼) / 문서에서 초안 만들기(최대 10건) / 처리 완료·되돌리기. <b>부분 안내</b> 건을 따로 표시</td></tr>
+      <tr><td><b>문서 보관함</b></td><td>업로드·개정·삭제·다운로드(서명 URL), 추출 상태·재추출, 문서 형식 확인(Q&amp;A 미리보기 3건), FAQ 초안 만들기(이어서 진행), 생성/승인/미검수 집계, 검수 큐 진입</td></tr>
+      <tr><td><b>대화 로그</b></td><td>날짜·처리 결과 필터, 대화 펼침(실제 응답·근거 FAQ 링크), 유입 채널 표시</td></tr>
+      <tr><td><b>유입 채널</b></td><td>채널별 대화·질문 수·비중·답변 성공률, 캠페인별 소계, 채널 링크 생성·복사(현재 주소 기준 자동 완성)</td></tr>
+      <tr><td><b>인증 종류</b></td><td>인증 이름 추가·수정·비활성화(코드는 불변), 사용 건수 표시, <code>common</code>은 고정 항목</td></tr>
+      <tr><td><b>운영 상태</b></td><td>DB·AI 실시간 점검, 최근 1시간 오류, 오늘 질문 수(상한 대비), 승인 FAQ·미답변 대기 → 정상/주의/긴급</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>구현 패턴</b>: 목록·상세는 서버 컴포넌트(데이터는 <code>lib/db</code> 직접 호출), 변경은 서버 액션 + <code>redirect(?msg=…)</code> 플래시, 클라이언트 컴포넌트는 체크박스 전체 선택·삭제 확인·업로드 파이프라인·링크 복사처럼 꼭 필요한 곳에만 사용.</p>
+</section>
+
+<!-- ───────── 10 ───────── -->
+<section id="ops">
+  <h2><span class="no">10</span>운영 기능</h2>
+
+  <div class="grid2">
+    <div class="card"><h4>요청 제한 <span class="pill gray">lib/rate-limit.ts · 0011</span></h4>
+      <ul>
+        <li>DB 고정 구간 카운터(RPC <code>rate_limit_hit</code>, 원자적 upsert) — 서버리스 인스턴스 간 공유</li>
+        <li>채팅: IP 분당 15 · 시간당 120 · <b>전체 하루 3,000</b>(AI 비용 보호). 관리자 로그인: IP 10/시간, 이메일 5/시간. 모두 환경 변수로 조정</li>
+        <li>키는 <b>해시</b>(IP·이메일 원문 저장 안 함). DB 오류 시 인스턴스 메모리 제한으로 폴백(제한이 꺼지지 않게)</li>
+      </ul></div>
+    <div class="card"><h4>모니터링·알림 <span class="pill gray">lib/monitor</span></h4>
+      <ul>
+        <li><code>/api/health</code>: DB·AI 점검(AI는 5분 캐시), 외부 가동 감시용(503이면 이상)</li>
+        <li><code>/api/cron/monitor</code>(Bearer <code>CRON_SECRET</code>): 신호 수집 → <b>순수 함수 <code>evaluate()</code></b>로 판정(AI 실패·DB 실패·오류율·상한 도달 = 긴급, 승인 FAQ 0건·미답변 적체 = 주의) → Resend 메일/웹훅. 같은 문제는 6시간 쿨다운(요청 제한 RPC 재사용)</li>
+        <li>실제 사고(AI 크레딧 소진 시 모든 질문이 조용히 담당자 이관)에서 출발한 설계</li>
+      </ul></div>
+    <div class="card"><h4>유입 채널 추적 <span class="pill gray">lib/channels.ts · 0012</span></h4>
+      <ul>
+        <li>링크 <code>/chat?src=채널&amp;c=캠페인</code> → 클라이언트가 탭 세션에 저장해 모든 요청에 첨부, 서버가 <b>허용 목록으로 정규화</b>(모르는 코드는 <code>other</code>, 형식 위반은 버림)</li>
+        <li>링크에 <code>src</code>가 없으면 Referer로 블로그·링크드인·인스타그램 추정. 위젯은 <code>data-src</code>(기본 homepage)</li>
+        <li>0012 적용 전에도 대화 기록이 깨지지 않도록 <code>insertChatLog</code>가 컬럼 부재 시 채널 없이 재시도</li>
+      </ul></div>
+    <div class="card"><h4>위젯 <span class="pill gray">public/widget.js</span></h4>
+      <ul>
+        <li>스크립트 한 줄 삽입. <b>Shadow DOM</b>으로 고객사 CSS와 격리, 패널은 <code>/chat</code> iframe(첫 클릭 시 로드), 480px 이하 전체 화면</li>
+        <li>ESC·✕로 닫기, <code>aria</code> 속성, 인쇄 시 숨김</li>
+      </ul></div>
+  </div>
+
+  <h3>백업·정리 스크립트</h3>
+  <div class="tw"><table>
+    <thead><tr><th>스크립트</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td><code>scripts/export-backup.ts</code></td><td>전 테이블 JSON + 문서 파일 + <code>manifest.json</code>(건수) — 읽기 전용</td></tr>
+      <tr><td><code>scripts/reset-faq-approval.ts</code></td><td>승인 되돌리기·복원(승인자 기록 포함), 기본 미리보기·<code>--apply</code></td></tr>
+      <tr><td><code>scripts/delete-chat-log.ts</code>, <code>delete-unanswered-before.ts</code></td><td>백업 후 삭제(미리보기 기본)</td></tr>
+      <tr><td><code>scripts/smoke-deploy.ts</code>, <code>golden.ts</code></td><td>배포 후 점검, 대표 질문 회귀</td></tr>
+    </tbody>
+  </table></div>
+  <p>파괴적인 스크립트는 공통 규칙을 따릅니다: <b>기본은 미리보기, <code>--apply</code>를 붙여야 실행, 실행 전 백업 파일 저장, 저장 확인 후에만 변경</b>.</p>
+</section>
+
+<!-- ───────── 11 ───────── -->
+<section id="quality">
+  <h2><span class="no">11</span>품질 보증</h2>
+  <div class="grid3">
+    <div class="card"><h4>단위·시나리오 테스트 <span class="pill ok">280</span></h4><p>Vitest. 시나리오 테스트(TC-01~10)는 <b>고정 FAQ 픽스처 + 실제 Claude 호출</b>(분류·선택·답변)로 동작해 DB 상태와 무관하게 결정적. 결정적 분기(요청 제한, 평가 함수, 채널 집계, 문서 선별, 승인 흐름)는 stub 단위 테스트.</p></div>
+    <div class="card"><h4>대표 질문 회귀 <span class="pill ok">42</span></h4><p><code>npm run golden</code>: 실제 모델·실제 승인 FAQ로 <code>runChat</code> 실행. 경로·근거 FAQ·금지 표현·<b>숫자 불변식</b>(답변의 숫자는 근거 FAQ·고정 문구에만) 검사. <code>--safety</code>(FAQ 없이도 통과), <code>--repeat N</code>(흔들림 탐지). 모델 호출 불가면 먼저 중단(종료 코드 2).</p></div>
+    <div class="card"><h4>배포 점검·정적 검사</h4><p><code>smoke:deploy</code>: 헬스체크, 관리자 보호, 개발용 경로 404, 보안 헤더, 챗봇 API 시나리오. 그 외 <code>tsc --noEmit</code>, ESLint, <code>next build</code>.</p></div>
+  </div>
+  <div class="callout info"><b>테스트 설계 포인트</b> "모델 출력"이 아니라 <b>"시스템이 지켜야 하는 불변식"</b>을 검사합니다. 예: 컨설팅 질문이면 고정 문구가 나가고 답변 생성이 호출되지 않는다 / 승인 0건이면 검색·답변이 호출되지 않는다 / 분류와 검색은 동시에 시작된다 / 버려지는 검색이 실패해도 처리되지 않은 거부가 없다.</div>
+</section>
+
+<!-- ───────── 12 ───────── -->
+<section id="code">
+  <h2><span class="no">12</span>코드 구조 · 컨벤션</h2>
+<pre><code class="tree">app/
+  chat/                  고객 챗봇 화면 (ChatApp)
+  admin/(panel)/         관리자 화면: faq · unanswered · documents · logs · channels · cert-types · status
+  admin/login, auth/     매직링크 로그인·콜백
+  api/chat               SSE 채팅
+  api/admin/*            로그인, 문서 FAQ 초안 생성
+  api/health, cron/monitor
+components/chat, admin   UI 컴포넌트
+lib/
+  chat/                  run-chat(처리 순서) · classify · answer · history
+  search/                searchFaq(프롬프트 선택) · lexical · select-faq · faq-cache
+  docs/                  문서→초안 서비스·선별·검수·재생성
+  extract/               PDF/DOCX/XLSX/PPTX/텍스트 추출·조각화
+  db/                    리포지토리 (DB 접근의 유일한 통로)
+  prompts/               시스템 프롬프트·고정 문구 상수 (인라인 금지)
+  monitor/ · admin/      상태·알림 / 접근 제어·집계
+  rate-limit.ts · channels.ts · cert-names.ts · cert-registry.ts
+supabase/migrations/     0001 ~ 0012
+scripts/                 백업·삭제·점검·일회성 적재
+tests/                   단위·시나리오·golden 케이스</code></pre>
+
+  <h3>프로젝트 규칙 (<code>CLAUDE.md</code>)</h3>
+  <ul>
+    <li>API 라우트는 <code>app/api/</code>, 비즈니스 로직은 <code>lib/</code>에 분리. <b>DB 접근은 <code>lib/db/</code>를 통해서만.</b></li>
+    <li>시스템 프롬프트는 <code>lib/prompts/</code>에 상수로 분리(코드에 인라인 금지). 고정 안내 문구도 <code>messages.ts</code> 한 곳에.</li>
+    <li>에러는 삼키지 않고 로깅 후 사용자에게는 담당자 연결 안내.</li>
+    <li>검색 방식은 프롬프트 선택(임베딩 금지) — 교체 범위는 <code>searchFaq()</code> 모듈로 한정.</li>
+  </ul>
+  <h3>반복해서 쓰는 패턴</h3>
+  <ul>
+    <li><b>순수 함수 + 얇은 I/O 껍데기</b>: <code>evaluate()</code>, <code>aggregateChannels()</code>, <code>screenItem()</code>, <code>parseSelection()</code>, <code>normalizeSource()</code> — 로직은 순수, DB·네트워크는 주입.</li>
+    <li><b>의존성 주입</b>: <code>runChat</code>/<code>createSearchFaq</code>/문서 파이프라인이 deps를 받아 테스트에서 stub.</li>
+    <li><b>점진적 호환</b>: 새 컬럼 의존 코드는 컬럼이 없을 때도 핵심 동작이 유지되도록 폴백(채널 기록, 지표 수집 등).</li>
+    <li><b>고정 문구 우선</b>: 모델 출력에 의존하지 않는 응답은 상수로. 모델 출력은 센티널·정규화·검증을 거쳐서만 사용.</li>
+  </ul>
+</section>
+
+<!-- ───────── 13 ───────── -->
+<section id="deploy">
+  <h2><span class="no">13</span>배포 · 환경</h2>
+  <div class="tw"><table>
+    <thead><tr><th>환경 변수</th><th>구분</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code> · <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>필수·공개</td><td>Supabase 주소와 익명 키</td></tr>
+      <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>필수·<b>서버 전용</b></td><td>RLS 우회 키. <code>NEXT_PUBLIC_</code> 금지</td></tr>
+      <tr><td><code>ANTHROPIC_API_KEY</code></td><td>필수·서버 전용</td><td>Claude API</td></tr>
+      <tr><td><code>ADMIN_ALLOWED_EMAILS</code></td><td>필수</td><td>관리자 이메일(쉼표 구분). 변경 시 재배포</td></tr>
+      <tr><td><code>NEXT_PUBLIC_SITE_URL</code> · <code>CHAT_FRAME_ANCESTORS</code></td><td>권장</td><td>공개 주소(로그인 링크 복귀) · /chat iframe 허용 사이트</td></tr>
+      <tr><td><code>CRON_SECRET</code> · <code>RESEND_API_KEY</code> · <code>ALERT_EMAIL_FROM</code> · <code>ALERT_WEBHOOK_URL</code></td><td>운영 모니터링</td><td>크론 인증, 알림 메일/웹훅</td></tr>
+      <tr><td><code>RATE_CHAT_PER_MINUTE</code> 등 <code>RATE_*</code></td><td>선택</td><td>요청 제한 조정</td></tr>
+      <tr><td><code>CLASSIFY_MODEL</code> · <code>SEARCH_MODEL</code> · <code>ANSWER_MODEL</code> · <code>DRAFT_MODEL</code></td><td>선택</td><td>모델 교체 (기본 Haiku 4.5 / Haiku 4.5 / Sonnet 5.5 / Sonnet 5.5)</td></tr>
+      <tr><td><code>SEARCH_DEBUG_ENABLED</code></td><td>운영 금지</td><td>개발용 <code>/api/search</code> 스위치</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Vercel</b>: Next.js 자동 감지, Node 20+. Functions 지역은 Supabase와 같게. <code>/api/chat</code>은 <code>maxDuration=60</code>. 크론은 <code>vercel.json</code>(Hobby는 일 1회, Pro는 분 단위).</li>
+    <li><b>Supabase</b>: 마이그레이션 0001~0012 적용, Auth URL Configuration(Site URL·Redirect URLs), 운영은 자체 SMTP 권장, 새 API 키(publishable/secret) 전환 예정(기존 anon/service_role 폐지 예정).</li>
+    <li><b>배포 후</b>: <code>npm run smoke:deploy -- {주소}</code> → 수동 점검(로그인·FAQ 반영·위젯).</li>
+  </ul>
+</section>
+
+<!-- ───────── 14 ───────── -->
+<section id="decisions">
+  <h2><span class="no">14</span>설계 결정과 알려진 한계</h2>
+  <div class="tw"><table>
+    <thead><tr><th>결정</th><th>이유</th><th>대가 / 한계</th></tr></thead>
+    <tbody>
+      <tr><td>임베딩 대신 프롬프트 선택</td><td>FAQ 수백 건 규모, 표현 변형에 강함, 인프라 단순, 교체 범위 한정</td><td>질문당 비용·지연이 FAQ 수에 비례(프롬프트 캐싱으로 완화). 약 500건 초과 시 재검토</td></tr>
+      <tr><td>분류 → 고정 문구 분기</td><td>컨설팅·불만은 모델이 쓰지 않게(법적·윤리적 위험 차단)</td><td>분류 오판 시 잘못된 분기 → 대표 질문 회귀로 감시, 모호하면 allowed 쪽으로(분류 프롬프트 규칙)</td></tr>
+      <tr><td>센티널(<code>[[NO_ANSWER]]</code>/<code>[[PARTIAL]]</code>) 프로토콜</td><td>모델 판단을 시스템 흐름 제어로 안전하게 연결</td><td>첫머리 버퍼링으로 첫 토큰이 약간 늦어짐</td></tr>
+      <tr><td>사람 승인 필수</td><td>책임 소재·정확성</td><td>FAQ가 쌓이기 전에는 챗봇이 답하지 못함(준비 중 안내로 처리)</td></tr>
+      <tr><td>서버리스 + DB 카운터 요청 제한</td><td>인스턴스 간 공유되는 제한, 새 인프라 불필요</td><td>고정 구간이라 경계에서 최대 2배 버스트 가능</td></tr>
+      <tr><td>한 앱(모놀리스)</td><td>작은 팀·작은 규모, 배포 단순</td><td>관리자 부하와 고객 부하가 같은 함수 풀을 공유</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>알려진 한계 · 로드맵 후보</h3>
+  <ul>
+    <li>인증 이력 입력 화면 없음(현재 DB 직접 입력) · 관리자 추가는 환경 변수 + 재배포.</li>
+    <li>유입 채널은 <b>질문한 방문만</b> 집계(방문·클릭 수 미집계). 방문 이벤트 추적 추가 가능.</li>
+    <li>한국어만 지원(외국어는 담당자 연결).</li>
+    <li>Supabase 기존 API 키 폐지 예정 → 새 키 호환 검증 필요. <code>npm audit</code> 의 next/postcss 이슈는 Next 16 업그레이드로 해소.</li>
+    <li>FAQ 규모가 커지면 검색 모듈만 교체(벡터 검색 + 재순위). 대화 로그 보관 정책·자동 정리 미구현.</li>
+    <li>역할 분리 없음(관리자 3명 모두 생성·검수·승인 가능).</li>
+  </ul>
+</section>
+
+<!-- ───────── 15 ───────── -->
+<section id="start">
+  <h2><span class="no">15</span>로컬 실행</h2>
+<pre><code>git clone &lt;repo&gt; igsc-chatbot &amp;&amp; cd igsc-chatbot
+npm install
+cp .env.example .env.local        # Supabase·Anthropic 키, ADMIN_ALLOWED_EMAILS 입력
+# Supabase SQL Editor 에서 supabase/migrations/0001 ~ 0012 를 순서대로 실행
+npm run dev                       # http://localhost:3000  (/chat, /admin)</code></pre>
+  <h4>자주 쓰는 명령</h4>
+<pre><code>npx tsc --noEmit &amp;&amp; npx eslint app lib components tests   # 정적 검사
+npm test                                                   # 단위·시나리오 (일부는 실제 Claude 호출)
+npm run golden -- --safety                                 # 안전 규칙 회귀 (FAQ 없이도 통과해야 함)
+npm run build                                              # 프로덕션 빌드
+npx tsx scripts/export-backup.ts                           # 전체 백업 (읽기 전용)</code></pre>
+  <div class="callout"><b>처음 읽을 파일 5개</b> ① <code>lib/chat/run-chat.ts</code>(처리 순서) → ② <code>lib/search/index.ts</code>(FAQ 선택) → ③ <code>lib/prompts/*.ts</code>(규칙이 코드가 아니라 프롬프트·고정 문구로 정의됨) → ④ <code>lib/docs/doc-faq.ts</code>(초안 선별) → ⑤ <code>CLAUDE.md</code>(프로젝트 규칙).</div>
+</section>
+
+<p class="foot">IGSC 인증 문의 챗봇 · 시스템 소개 (개발자용) · 2026-10-07 기준 · 수치(파일·줄·테스트 수)는 작성 시점 값입니다. 관련 문서: <code>docs/deploy.md</code>, <code>docs/monitoring.md</code>, <code>docs/channels.md</code>, <code>docs/golden-tests.md</code>, <code>docs/handover/</code>.</p>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // 코드 블록 복사 버튼
+  document.querySelectorAll('pre').forEach(function(pre){
+    if(pre.querySelector('.tree')) return;
+    var b=document.createElement('button'); b.className='copy'; b.type='button'; b.textContent='복사';
+    b.addEventListener('click',function(){
+      var t=pre.innerText.replace(/\n?복사$/,'');
+      (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){b.textContent='복사됨';setTimeout(function(){b.textContent='복사'},1200)}).catch(function(){b.textContent='실패'});
+    });
+    pre.appendChild(b);
+  });
+  // 목차 현재 위치 표시
+  var links=[].slice.call(document.querySelectorAll('#toc a'));
+  var map={}; links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+  var secs=[].slice.call(document.querySelectorAll('header.hero, section'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){ links.forEach(function(a){a.classList.remove('active')}); var a=map[e.target.id]; if(a) a.classList.add('active'); }
+      });
+    },{rootMargin:'-20% 0px -70% 0px'});
+    secs.forEach(function(s){ if(s.id) io.observe(s); });
+  }
+  // 테마 전환 (선택값은 저장하지 않음)
+  var btn=document.getElementById('themeBtn');
+  btn.addEventListener('click',function(){
+    var root=document.documentElement;
+    var cur=root.getAttribute('data-theme');
+    var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var isDark=cur?cur==='dark':dark;
+    root.setAttribute('data-theme',isDark?'light':'dark');
+  });
+})();
+</script>
+</body>
+</html>

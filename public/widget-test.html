@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>위젯 삽입 테스트 (개발용)</title>
+  <!-- 고객사 CSS 충돌 테스트: 일부러 공격적인 전역 스타일 -->
+  <style>
+    * { font-family: monospace !important; letter-spacing: 3px !important; }
+    button { background: hotpink !important; color: yellow !important; border-radius: 0 !important; width: 200px !important; }
+    div, iframe { border: 3px dashed red !important; }
+    body { margin: 0; padding: 24px; background: #fef3c7; }
+  </style>
+</head>
+<body>
+  <h1>고객사 페이지 (테스트)</h1>
+  <p>우측 하단에 챗봇 버튼이 보여야 합니다. 위의 전역 스타일이 위젯에 영향을 주면 안 됩니다.</p>
+  <p style="height:1400px">스크롤용 본문…</p>
+
+  <!-- 삽입 코드 (이 한 줄) -->
+  <script src="/widget.js" async></script>
+</body>
+</html>
