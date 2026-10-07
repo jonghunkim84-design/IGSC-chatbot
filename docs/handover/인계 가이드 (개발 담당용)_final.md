@@ -26,7 +26,7 @@
 3. **키 노출**: 개발 중 쓴 키가 대화·로그에 남아 있습니다 → 인계 후 전부 폐기·재발급.
 4. **개인정보**: 로컬의 `docs/customer-files/`, `data/`, 백업에 고객 문의 원문이 있습니다 → 저장소에 올리지 않고 보관 방법을 합의.
 5. **무료 요금제**: Vercel Hobby는 비상업·개인용만 허용되고 크론이 하루 1회로 제한됩니다(Pro는 1분 간격). Supabase 무료 프로젝트는 1주 비활성이면 일시 정지됩니다 → 고객은 두 서비스 모두 Pro.
-6. **Supabase 기존 키 폐지 예정**: 공식 문서상 기존 `anon`/`service_role` 키는 2026년 말까지 단계적으로 폐지되고 새 키(`sb_publishable_…`, `sb_secret_…`)로 전환됩니다. 이 시스템은 기존 키 이름(`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)을 쓰므로 **인계 전에 새 키로 동작하는지 검증**해야 합니다 (A-4).
+6. **Supabase 기존 키 폐지 예정**: 공식 문서상 기존 `anon`/`service_role` 키는 2026년 말까지 단계적으로 폐지되고 새 키(`sb_publishable_…`, `sb_secret_…`)로 전환됩니다. 이 시스템의 환경 변수 이름(`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)은 그대로 두고 **값만 새 키로 넣으면** 동작함을 검증했습니다(A-4, 2026-10-07).
 
 ---
 
@@ -95,7 +95,7 @@ git status          # 올라갈 파일 목록 확인 (data/, customer-files, .en
 | 인증 이력 비공개 전환 | ✅ 완료(2026-10-07) | 220건 모두 비공개(공개 0건). 공개 동의 확인 후 `npm run ingest:history:public -- on` |
 | 승인 FAQ 상태 정리 | ✅ 0건(2026-10-07) | 승인 443건을 초안으로 되돌림(복원 파일: `data/backup/faq-approved-2026-10-07T07-20-16.json`, 복원은 `reset-faq-approval.ts --restore`). 대화 기록·미답변도 0건으로 정리. **인계 당일 시작 전에 다시 확인** |
 | 알림 메일 도메인 인증 | ⬜ 고객 도메인 확정 후 | 현재 테스트 발신 주소 |
-| **Supabase 새 API 키(publishable/secret) 호환 검증** | ⬜ 미실행 | 기존 키 폐지 예정. 새 키를 만들어(Settings > API Keys) 로컬 `.env.local`에서 `NEXT_PUBLIC_SUPABASE_ANON_KEY`에 publishable 키, `SUPABASE_SERVICE_ROLE_KEY`에 secret 키를 넣고 `npm run dev`로 챗봇·관리자 로그인(`@supabase/ssr` 포함)·문서 업로드·백업 스크립트가 모두 동작하는지 확인. 동작하면 인계 시 새 키로 배포하고, 안 되면 코드 수정 후 인계 |
+| Supabase 새 API 키(publishable/secret) 호환 검증 | ✅ 완료(2026-10-07) | `scripts/verify-new-keys.ts` 19개 항목 통과(secret 키: 서버 작업·저장소·요청 제한 함수·관리자 API, publishable 키: 익명 권한·`@supabase/ssr`·로그인 링크 API, 앱 수준: 새 키로 `/api/health`·`/admin` 차단·`/api/chat`·대화 기록 저장). **코드 수정 없이** 새 키로 배포 가능. 인계 당일에는 새 키를 Vercel 환경 변수에 넣고, 개발 중 만든 키는 B-8에서 폐기·재발급 |
 
 ### A-5. 인계 전 검증 (모두 통과해야 합니다)
 ```
@@ -263,7 +263,7 @@ Supabase 키를 재발급하면 **개발 계정의 옛 Vercel 프로젝트**는 
 | FAQ 검색 방식 | 목록 전체를 AI에 보내는 방식(임베딩 없음). 승인 FAQ 약 500건 넘으면 응답 속도·비용 점검, 필요 시 검색 모듈(`lib/search/`) 교체 (인터페이스 `searchFaq()` 유지) |
 | 의존성 취약점 | `npm audit`의 next/postcss 2건 — 해결은 Next 16 업그레이드 필요 |
 | 자동 점검 주기 | Hobby는 하루 1회(시간 정밀도 ±59분), Pro는 1분 간격까지 가능 → `*/30 * * * *` |
-| Supabase 기존 키 폐지 | 기존 anon/service_role 키는 2026년 말까지 단계적 폐지 예정. A-4의 새 키 호환 검증 결과를 인수인계 |
+| Supabase 기존 키 폐지 | 기존 anon/service_role 키는 2026년 말까지 단계적 폐지 예정. 새 키(publishable/secret)로 동작함을 검증 완료(`scripts/verify-new-keys.ts`) → 인계 시 새 키 사용 |
 | Anthropic 한도 | 새 조직은 낮은 한도의 Evaluation 단계에서 시작할 수 있음. 월 지출 한도·자동 충전은 고객이 Billing에서 설정 |
 | 대화 로그 | 계속 쌓임. 보관 기간 정책 필요 |
 | 한국어만 지원 | 외국어는 담당자 연결 |
