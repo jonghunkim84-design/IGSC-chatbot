@@ -33,7 +33,7 @@
 ## A. 인계 전 준비
 
 ### A-1. 소스 코드 저장소
-현재 프로젝트는 **git 저장소가 아닙니다.** 고객 소유 저장소로 올릴 준비를 합니다.
+**전달 방식: 고객이 GitHub에서 직접 `git clone`으로 받아 가고, 고객이 자기 저장소에 다시 올려 소유를 독립합니다.** (폴더·USB·압축 파일로 넘기지 않습니다.) 현재 상태: git 저장소 준비 완료, 비공개 저장소 `jonghunkim84-design/IGSC-chatbot` 에 `main` push 완료(2026-10-07, 커밋 `6c8d24a`).
 
 1. **`.gitignore` 보강** (이미 반영됨): 비밀 정보와 개인정보가 저장소에 올라가지 않게 합니다.
    - `.env*` (단 `.env.example`은 제외) — 이미 있음
@@ -47,7 +47,17 @@ git add -A
 git status          # 올라갈 파일 목록 확인 (data/, customer-files, .env.local 이 없어야 함)
 ```
    소스에서 `sk-ant-`, `re_`, `eyJ`(Supabase 키 형태), 이메일 주소 등을 검색합니다. **대화·문서에 붙여 넣은 키는 인계 후 재발급하므로 지금 노출돼 있어도 무방**하지만, 소스 파일에는 없어야 합니다.
-3. **고객이 만든 비공개 저장소**에 개발 담당자가 초대받아 첫 커밋을 올립니다 (`git remote add origin …`, `git push`). 인계 후에는 고객이 소유합니다.
+3. **인계 당일 전달 절차** (고객이 당겨 가는 방식)
+   1. 고객의 **GitHub 아이디**를 받습니다 (A-7).
+   2. **읽기 권한으로 초대**: 저장소 Settings → Collaborators → Add people, 또는
+      ```
+      gh api -X PUT repos/jonghunkim84-design/IGSC-chatbot/collaborators/<고객 GitHub ID> -f permission=pull
+      ```
+      (초대는 고객이 수락해야 유효, 약 7일. 인계 전날이 아니라 **당일 오전**에 보내면 편합니다.)
+   3. 고객이 인수 가이드 4-6의 순서로 `git clone` → 자기 비공개 저장소에 `git push` (고객이 직접, 화면 공유로 안내).
+   4. **확인**: 고객 저장소에 커밋 `6c8d24a`(이후 커밋 포함)와 전체 이력이 보이는지, `.env.local`·`data/`·`docs/customer-files/`가 없는지 확인.
+   5. **정리**: 내 저장소에서 고객 collaborator 제거(Settings → Collaborators), `jonghunkim84-design/IGSC-chatbot` 은 B-10에서 **삭제 또는 보관**을 결정(고객 요구). 개발 PC의 `origin` 은 인계 후 제거(`git remote remove origin`).
+   > 저장소는 **비공개 유지**. 문서에 고객 연락처·운영 정보가 있습니다. 초기에는 고객이 clone만 하면 되므로 쓰기 권한은 주지 않습니다.
 4. **브랜치 규칙**: `main` 하나만 쓰고, 변경은 Claude Code가 커밋하도록 안내합니다.
 
 ### A-2. 코드 정리
@@ -154,7 +164,7 @@ npx tsx scripts/export-backup.ts
    - 기존 관리자 계정(개발자 이메일)은 `auth.users`에 남아 있으나 `ADMIN_ALLOWED_EMAILS`에서 빠지면 접근할 수 없습니다.
 
 ### B-4. 고객 Vercel에 새 프로젝트 배포
-고객 PC의 프로젝트 폴더에서 진행합니다 (코드는 고객 GitHub 저장소에서 `git clone`한 것).
+고객 PC의 프로젝트 폴더에서 진행합니다 (코드는 GitHub에서 `git clone`한 것).
 1. **고객이 직접 로그인**: `vercel login` (고객 계정)
 2. 새 프로젝트 연결: `vercel link` → 새 프로젝트 이름(예: `igsc-chatbot`) 생성
 3. **환경 변수 입력** (`vercel env add 이름 production`, 값은 화면에서 입력 — 채팅·문서에 붙여 넣지 않음):
@@ -229,7 +239,7 @@ Supabase 키를 재발급하면 **개발 계정의 옛 Vercel 프로젝트**는 
 - [ ] 개발 계정의 Anthropic·Resend 키 **폐기**, 개발 PC의 `.env.local` 삭제 또는 새 키로 교체
 - [ ] 개발 PC의 백업 폴더(`data/backup/`)와 `docs/customer-files/`: 고객 요구에 따라 **삭제** 또는 안전한 보관
 - [ ] 고객 Supabase 조직에서 개발 담당자 **권한 제거** (필요하면 지원 시에만 임시 초대)
-- [ ] 고객 GitHub 저장소 소유권 확인 (개발 담당자는 권한 제거 또는 읽기 권한)
+- [ ] **고객이 자기 GitHub 저장소로 push 완료**를 확인하고(A-1 절차 4), 내 저장소에서 고객 collaborator 제거 · `IGSC-chatbot` 삭제 또는 비공개 보관 결정 · 개발 PC의 `git remote remove origin`
 - [ ] 고객 Vercel 팀·계정에 개발 담당자가 남아 있다면 제거
 
 ---
